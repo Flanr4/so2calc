@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Standoff 2 Market Calculator</title>
+    <link rel="manifest" href='data:application/manifest+json,{"name":"SO2 Calc","short_name":"SO2 Calc","start_url":".","display":"standalone","background_color":"#121212","theme_color":"#ff9800"}'>
+    <style>
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 14px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+            max-width: 360px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        h2 {
+            color: #ff9800;
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            color: #aaa;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            background-color: #2a2a2a;
+            color: #fff;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        input:focus {
+            border-color: #ff9800;
+            outline: none;
+        }
+        .results {
+            margin-top: 20px;
+            border-top: 1px solid #333;
+            padding-top: 15px;
+        }
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #bbb;
+        }
+        .highlight {
+            font-size: 18px;
+            margin-top: 12px;
+        }
+        .profit-pos { color: #4caf50 !important; font-weight: bold; }
+        .profit-neg { color: #f44336 !important; font-weight: bold; }
+        .neutral { color: #888 !important; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>SO2 Spread Calc</h2>
+        <div class="input-group">
+            <label for="bid">Текущий БИД (Запрос):</label>
+            <input type="number" id="bid" step="0.01" placeholder="0.00" oninput="calculate()">
+        </div>
+        <div class="input-group">
+            <label for="ask">Текущий АСК (Ордер):</label>
+            <input type="number" id="ask" step="0.01" placeholder="0.00" oninput="calculate()">
+        </div>
+        
+        <div class="results">
+            <div class="result-row">
+                <span>Твоя покупка (Бид + 0.01):</span>
+                <span id="buy-price">0.00</span>
+            </div>
+            <div class="result-row">
+                <span>Твоя продажа (Аск - 0.01):</span>
+                <span id="sell-price">0.00</span>
+            </div>
+            <div class="result-row">
+                <span>Чистыми после продажи (-20%):</span>
+                <span id="receive-price">0.00</span>
+            </div>
+            <hr style="border: 0; border-top: 1px dashed #333; margin: 15px 0;">
+            <div class="result-row highlight">
+                <span>Чистая прибыль:</span>
+                <span id="profit" class="neutral">0.00 G</span>
+            </div>
+            <div class="result-row highlight">
+                <span>Окупаемость (ROI):</span>
+                <span id="roi" class="neutral">0.0%</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function calculate() {
+            const bid = parseFloat(document.getElementById('bid').value) || 0;
+            const ask = parseFloat(document.getElementById('ask').value) || 0;
+
+            if (bid <= 0 || ask <= 0) {
+                resetResults();
+                return;
+            }
+
+            const buyPrice = bid + 0.01;
+            const sellPrice = ask - 0.01;
+            const receivePrice = sellPrice * 0.8;
+            const profit = receivePrice - buyPrice;
+            const roi = (profit / buyPrice) * 100;
+
+            document.getElementById('buy-price').innerText = buyPrice.toFixed(2);
+            document.getElementById('sell-price').innerText = sellPrice.toFixed(2);
+            document.getElementById('receive-price').innerText = receivePrice.toFixed(2);
+            
+            const profitEl = document.getElementById('profit');
+            const roiEl = document.getElementById('roi');
+
+            const sign = profit > 0 ? '+' : '';
+            profitEl.innerText = sign + profit.toFixed(2) + ' G';
+            roiEl.innerText = sign + roi.toFixed(1) + '%';
+
+            if (profit > 0) {
+                profitEl.className = 'profit-pos';
+                roiEl.className = 'profit-pos';
+            } else if (profit < 0) {
+                profitEl.className = 'profit-neg';
+                roiEl.className = 'profit-neg';
+            } else {
+                profitEl.className = 'neutral';
+                roiEl.className = 'neutral';
+            }
+        }
+
+        function resetResults() {
+            document.getElementById('buy-price').innerText = '0.00';
+            document.getElementById('sell-price').innerText = '0.00';
+            document.getElementById('receive-price').innerText = '0.00';
+            document.getElementById('profit').innerText = '0.00 G';
+            document.getElementById('roi').innerText = '0.0%';
+            document.getElementById('profit').className = 'neutral';
+            document.getElementById('roi').className = 'neutral';
+        }
+    </script>
+</body>
+</html>
