@@ -4,10 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Standoff 2 Market Calculator</title>
-    <link rel="manifest" href='data:application/manifest+json,{"name":"SO2 Calc","short_name":"SO2 Calc","start_url":".","display":"standalone","background_color":"#121212","theme_color":"#ff9800"}'>
+    <!-- Обновленные цвета манифеста -->
+    <link rel="manifest" href='data:application/manifest+json,{"name":"SO2 Calc","short_name":"SO2 Calc","start_url":".","display":"standalone","background_color":"#000000","theme_color":"#82b1ff"}'>
     <style>
         body {
-            background-color: #121212;
+            /* Чистый черный цвет для OLED */
+            background-color: #000000;
             color: #e0e0e0;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0;
@@ -16,16 +18,17 @@
             justify-content: center;
         }
         .container {
-            background-color: #1e1e1e;
+            /* Убраны тени, чтобы сливалось с фоном */
+            background-color: #000000;
             padding: 20px;
             border-radius: 14px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
             max-width: 360px;
             width: 100%;
             box-sizing: border-box;
         }
         h2 {
-            color: #ff9800;
+            /* Бледно-голубой акцент */
+            color: #82b1ff;
             text-align: center;
             margin-top: 0;
             margin-bottom: 20px;
@@ -42,19 +45,48 @@
             font-size: 13px;
             color: #aaa;
         }
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
         input {
             width: 100%;
-            padding: 12px;
+            /* Отступ справа, чтобы текст не залезал под галочку */
+            padding: 12px 45px 12px 12px;
             border: 1px solid #333;
             border-radius: 8px;
-            background-color: #2a2a2a;
+            background-color: #121212;
             color: #fff;
             font-size: 16px;
             box-sizing: border-box;
+            transition: border-color 0.2s;
         }
         input:focus {
-            border-color: #ff9800;
+            /* Голубой контур при нажатии */
+            border-color: #82b1ff;
             outline: none;
+        }
+        .done-btn {
+            position: absolute;
+            right: 8px;
+            background: none;
+            border: none;
+            padding: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+        .done-btn:hover, .done-btn:active {
+            opacity: 1;
+        }
+        .done-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: #82b1ff;
         }
         .results {
             margin-top: 20px;
@@ -68,6 +100,10 @@
             font-size: 14px;
             color: #bbb;
         }
+        .result-row span:last-child {
+            color: #fff;
+            font-variant-numeric: tabular-nums;
+        }
         .highlight {
             font-size: 18px;
             margin-top: 12px;
@@ -80,13 +116,27 @@
 <body>
     <div class="container">
         <h2>SO2 Spread Calc</h2>
-        <div class="input-group">
-            <label for="bid">Текущий БИД (Запрос):</label>
-            <input type="number" id="bid" step="0.01" placeholder="0.00" oninput="calculate()">
-        </div>
+        
+        <!-- АСК теперь сверху -->
         <div class="input-group">
             <label for="ask">Текущий АСК (Ордер):</label>
-            <input type="number" id="ask" step="0.01" placeholder="0.00" oninput="calculate()">
+            <div class="input-wrapper">
+                <input type="number" id="ask" step="0.01" placeholder="0.00" oninput="calculate()" onkeydown="handleEnter(event, 'bid')">
+                <button class="done-btn" onclick="document.getElementById('ask').blur()" tabindex="-1">
+                    <svg viewBox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- БИД теперь снизу -->
+        <div class="input-group">
+            <label for="bid">Текущий БИД (Запрос):</label>
+            <div class="input-wrapper">
+                <input type="number" id="bid" step="0.01" placeholder="0.00" oninput="calculate()" onkeydown="handleEnter(event, 'blur')">
+                <button class="done-btn" onclick="document.getElementById('bid').blur()" tabindex="-1">
+                    <svg viewBox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>
+                </button>
+            </div>
         </div>
         
         <div class="results">
@@ -115,6 +165,18 @@
     </div>
 
     <script>
+        // Функция перехвата Enter
+        function handleEnter(event, targetAction) {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // Блокируем стандартное поведение
+                if (targetAction === 'blur') {
+                    event.target.blur(); // Скрываем клавиатуру
+                } else {
+                    document.getElementById(targetAction).focus(); // Прыгаем на следующий инпут
+                }
+            }
+        }
+
         function calculate() {
             const bid = parseFloat(document.getElementById('bid').value) || 0;
             const ask = parseFloat(document.getElementById('ask').value) || 0;
