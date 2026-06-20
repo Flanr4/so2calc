@@ -2,222 +2,133 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Standoff 2 Market Calculator</title>
     <link rel="manifest" href='data:application/manifest+json,{"name":"SO2 Calc","short_name":"SO2 Calc","start_url":".","display":"standalone","background_color":"#000000","theme_color":"#82b1ff"}'>
     <style>
-        body {
+        /* Фикс прокрутки для плавающих окон */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
             background-color: #000000;
+            overflow: hidden; /* Отключаем системный баунс */
+        }
+        body {
             color: #e0e0e0;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            margin: 0;
-            padding: 15px;
             display: flex;
             justify-content: center;
         }
         .container {
-            background-color: #000000;
-            padding: 10px 20px 20px 20px;
-            border-radius: 14px;
-            max-width: 380px;
             width: 100%;
+            max-width: 380px;
+            height: 100%;
+            overflow-y: auto; /* Теперь весь калькулятор скроллится, если окно мелкое */
+            padding: 15px 15px 30px 15px;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
-            height: 95vh; /* Чтобы история скроллилась внутри экрана */
         }
+        /* Кастомизация скроллбара контейнера */
+        .container::-webkit-scrollbar { width: 4px; }
+        .container::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+
         h2 {
-            color: #82b1ff;
-            text-align: center;
-            margin-top: 0;
-            margin-bottom: 20px;
-            font-size: 20px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            flex-shrink: 0;
+            color: #82b1ff; text-align: center; margin-top: 0; margin-bottom: 20px;
+            font-size: 20px; text-transform: uppercase; letter-spacing: 1px; flex-shrink: 0;
         }
         .input-group { margin-bottom: 15px; flex-shrink: 0; }
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-size: 13px;
-            color: #aaa;
-        }
-        .input-wrapper {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
+        label { display: block; margin-bottom: 6px; font-size: 13px; color: #aaa; }
+        .input-wrapper { position: relative; display: flex; align-items: center; }
         input[type="number"], input[type="text"] {
-            width: 100%;
-            padding: 12px 45px 12px 12px;
-            border: 1px solid #333;
-            border-radius: 8px;
-            background-color: #121212;
-            color: #fff;
-            font-size: 16px;
-            box-sizing: border-box;
-            transition: border-color 0.2s;
+            width: 100%; padding: 12px 45px 12px 12px; border: 1px solid #333;
+            border-radius: 8px; background-color: #121212; color: #fff;
+            font-size: 16px; box-sizing: border-box; transition: border-color 0.2s;
         }
-        input[type="number"]:focus, input[type="text"]:focus {
-            border-color: #82b1ff;
-            outline: none;
-        }
+        input[type="number"]:focus, input[type="text"]:focus { border-color: #82b1ff; outline: none; }
+        
         .done-btn {
-            position: absolute;
-            right: 8px;
-            background: none;
-            border: none;
-            padding: 4px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0.6;
-            transition: opacity 0.2s;
+            position: absolute; right: 8px; background: none; border: none;
+            padding: 4px; cursor: pointer; display: flex; align-items: center;
+            justify-content: center; opacity: 0.6;
         }
         .done-btn:active { opacity: 1; }
         .done-btn svg { width: 24px; height: 24px; fill: #82b1ff; }
         
         .results {
-            margin-top: 15px;
-            border-top: 1px solid #333;
-            padding-top: 15px;
-            flex-shrink: 0;
+            margin-top: 10px; border-top: 1px solid #333; padding-top: 15px; flex-shrink: 0;
         }
-        .result-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            font-size: 14px;
-            color: #bbb;
-        }
-        .result-row span:last-child {
-            color: #fff;
-            font-variant-numeric: tabular-nums;
-        }
+        .result-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; color: #bbb; }
+        .result-row span:last-child { color: #fff; font-variant-numeric: tabular-nums; }
         .highlight { font-size: 18px; margin-top: 12px; }
         .profit-pos { color: #4caf50 !important; font-weight: bold; }
         .profit-neg { color: #f44336 !important; font-weight: bold; }
         .neutral { color: #888 !important; }
 
         .btn-new {
-            width: 100%;
-            padding: 12px;
-            background-color: #1e1e1e;
-            color: #82b1ff;
-            border: 1px solid #333;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 15px;
-            margin-bottom: 20px;
-            transition: background 0.2s;
+            width: 100%; padding: 12px; background-color: #1e1e1e; color: #82b1ff;
+            border: 1px solid #333; border-radius: 8px; font-size: 15px; font-weight: bold;
+            cursor: pointer; margin-top: 15px; margin-bottom: 20px; flex-shrink: 0;
         }
         .btn-new:active { background-color: #2a2a2a; }
 
-        /* --- БЛОК ИСТОРИИ --- */
         .history-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-top: 1px dashed #333;
-            padding-top: 15px;
-            margin-bottom: 10px;
-            flex-shrink: 0;
+            display: flex; justify-content: space-between; align-items: center;
+            border-top: 1px dashed #333; padding-top: 15px; margin-bottom: 10px; flex-shrink: 0;
         }
         .history-title { font-size: 14px; color: #aaa; }
         .history-size { font-size: 11px; color: #666; margin-left: 5px;}
-        .clear-history-btn {
-            background: none;
-            border: none;
-            color: #f44336;
-            font-size: 13px;
-            cursor: pointer;
-            padding: 4px;
-            opacity: 0.8;
-        }
+        .clear-history-btn { background: none; border: none; color: #f44336; font-size: 13px; cursor: pointer; padding: 4px; }
 
-        .history-list {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding-right: 5px;
-            padding-bottom: 10px;
-        }
-        /* Стилизация скроллбара */
-        .history-list::-webkit-scrollbar { width: 4px; }
-        .history-list::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
-
+        .history-list { flex-grow: 1; }
+        
         .history-card {
-            background-color: #121212;
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 10px;
-            border-left: 4px solid #333; /* Дефолтный цвет метки */
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: border 0.2s;
+            background-color: #121212; border-radius: 8px; padding: 12px;
+            margin-bottom: 10px; border-left: 4px solid #333;
+            display: flex; justify-content: space-between; align-items: center;
         }
-        .history-card.active-card {
-            border: 1px solid #82b1ff;
-            border-left: 4px solid #82b1ff;
-        }
+        .history-card.active-card { border: 1px solid #82b1ff; border-left: 4px solid #82b1ff; }
         .card-data { flex-grow: 1; cursor: pointer; }
-        .card-name { 
-            font-size: 14px; 
-            font-weight: bold; 
-            color: #fff; 
-            margin-bottom: 4px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
+        .card-name { font-size: 14px; font-weight: bold; color: #fff; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
         .card-numbers { font-size: 13px; color: #aaa; }
         .card-profit { font-weight: bold; font-size: 14px;}
-        .card-actions {
-            display: flex;
-            align-items: center;
-            padding-left: 10px;
-        }
-        .icon-btn {
-            background: none; border: none; padding: 6px; cursor: pointer;
-        }
+        .card-actions { display: flex; align-items: center; padding-left: 10px; }
+        .icon-btn { background: none; border: none; padding: 6px; cursor: pointer; }
         .icon-btn svg { width: 20px; height: 20px; fill: #888; }
         .icon-btn:active svg { fill: #fff; }
-        
         .star-icon { width: 14px; height: 14px; fill: #ffeb3b; }
 
         /* --- МОДАЛЬНОЕ ОКНО --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.8);
-            display: none; justify-content: center; align-items: center;
-            z-index: 100;
+            background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 100;
         }
         .modal-overlay.open { display: flex; }
         .modal-content {
             background: #1e1e1e; padding: 20px; border-radius: 12px;
             width: 90%; max-width: 320px; border: 1px solid #333;
+            max-height: 95vh; overflow-y: auto; /* Фикс для горизонтального режима */
         }
         .modal-content h3 { margin-top: 0; color: #82b1ff; font-size: 18px; margin-bottom: 15px;}
         
-        .modal-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
-        .color-picker-wrapper { display: flex; align-items: center; gap: 10px; color: #aaa; font-size: 14px;}
-        input[type="color"] {
-            -webkit-appearance: none; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: none;
+        /* --- КАСТОМНЫЙ COLOR PICKER --- */
+        .picker-container {
+            background: #121212; padding: 15px; border-radius: 8px; border: 1px solid #333; margin-bottom: 15px;
         }
-        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
-        input[type="color"]::-webkit-color-swatch { border: none; border-radius: 50%; }
-
-        .fav-wrapper { display: flex; align-items: center; gap: 8px; color: #aaa; font-size: 14px;}
+        .picker-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 13px; color: #aaa; }
+        .fav-wrapper { display: flex; align-items: center; gap: 8px; color: #fff; font-size: 14px;}
         input[type="checkbox"] { width: 18px; height: 18px; accent-color: #82b1ff; }
+        
+        #sv-canvas { width: 100%; height: 140px; border-radius: 4px; touch-action: none; display: block; }
+        #hue-canvas { width: 100%; height: 24px; border-radius: 4px; touch-action: none; margin-top: 12px; display: block; }
+        
+        .color-preview-row { display: flex; align-items: center; gap: 12px; margin-top: 15px; }
+        #color-preview { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #555; }
+        #color-hex-val { font-family: monospace; color: #aaa; font-size: 14px; }
 
-        .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
-        .modal-buttons button {
-            flex: 1; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; border: none;
-        }
+        .modal-buttons { display: flex; gap: 10px; margin-top: 10px; }
+        .modal-buttons button { flex: 1; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; }
         .btn-cancel { background: #333; color: #fff; }
         .btn-save { background: #82b1ff; color: #000; }
 
@@ -284,18 +195,26 @@
     <div class="modal-overlay" id="edit-modal">
         <div class="modal-content">
             <h3>Настройки записи</h3>
-            <div class="input-group">
+            <div class="input-group" style="margin-bottom: 10px;">
                 <input type="text" id="edit-name" placeholder="Название предмета">
             </div>
-            <div class="modal-row">
-                <div class="color-picker-wrapper">
-                    Цвет метки:
-                    <input type="color" id="edit-color" value="#333333">
+
+            <div class="picker-container">
+                <div class="picker-header">
+                    <span>Цвет метки</span>
+                    <div class="fav-wrapper">
+                        <input type="checkbox" id="edit-fav"> Избранное
+                    </div>
                 </div>
-                <div class="fav-wrapper">
-                    <input type="checkbox" id="edit-fav"> Избранное
+                <canvas id="sv-canvas" width="260" height="140"></canvas>
+                <canvas id="hue-canvas" width="260" height="24"></canvas>
+                
+                <div class="color-preview-row">
+                    <div id="color-preview"></div>
+                    <span id="color-hex-val">#333333</span>
                 </div>
             </div>
+
             <div class="modal-buttons">
                 <button class="btn-cancel" onclick="closeModal()">Отмена</button>
                 <button class="btn-save" onclick="saveModal()">Сохранить</button>
@@ -307,11 +226,16 @@
         const STORAGE_KEY = 'so2_calc_history_v2';
         let historyData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
         let activeCardId = null;
-        let editingCardId = null; // Для модального окна
+        let editingCardId = null;
 
-        // Инициализация при загрузке
+        // --- Переменные Color Picker ---
+        let currentHue = 0, currentSat = 0, currentVal = 0.2;
+        let modalColorHex = '#333333';
+        let isDraggingSV = false, isDraggingHue = false;
+
         window.onload = () => {
             renderHistory();
+            initColorPickerEvents();
         };
 
         function handleEnter(event, targetAction) {
@@ -323,15 +247,10 @@
         }
 
         function calculate() {
-            const bidInput = document.getElementById('bid').value;
-            const askInput = document.getElementById('ask').value;
-            const bid = parseFloat(bidInput) || 0;
-            const ask = parseFloat(askInput) || 0;
+            const bid = parseFloat(document.getElementById('bid').value) || 0;
+            const ask = parseFloat(document.getElementById('ask').value) || 0;
 
-            if (bid <= 0 || ask <= 0) {
-                resetResults();
-                return;
-            }
+            if (bid <= 0 || ask <= 0) { resetResults(); return; }
 
             const buyPrice = bid + 0.01;
             const sellPrice = ask - 0.01;
@@ -339,41 +258,29 @@
             const profit = receivePrice - buyPrice;
             const roi = (profit / buyPrice) * 100;
 
-            // Обновляем UI
             document.getElementById('buy-price').innerText = buyPrice.toFixed(2);
             document.getElementById('sell-price').innerText = sellPrice.toFixed(2);
             document.getElementById('receive-price').innerText = receivePrice.toFixed(2);
             
             const profitEl = document.getElementById('profit');
             const roiEl = document.getElementById('roi');
-
             const sign = profit > 0 ? '+' : '';
             profitEl.innerText = sign + profit.toFixed(2) + ' G';
             roiEl.innerText = sign + roi.toFixed(1) + '%';
-
             profitEl.className = profit > 0 ? 'profit-pos' : (profit < 0 ? 'profit-neg' : 'neutral');
             roiEl.className = profit > 0 ? 'profit-pos' : (profit < 0 ? 'profit-neg' : 'neutral');
 
-            // --- АВТОСОХРАНЕНИЕ ---
             if (!activeCardId) {
-                // Создаем новую запись
                 activeCardId = Date.now().toString();
-                const newItem = {
+                historyData.unshift({
                     id: activeCardId, ask, bid, profit, roi,
                     name: '', color: '#333333', isFavorite: false, timestamp: Date.now()
-                };
-                historyData.unshift(newItem);
+                });
             } else {
-                // Обновляем активную запись
                 const cardIndex = historyData.findIndex(c => c.id === activeCardId);
                 if (cardIndex !== -1) {
-                    historyData[cardIndex].ask = ask;
-                    historyData[cardIndex].bid = bid;
-                    historyData[cardIndex].profit = profit;
-                    historyData[cardIndex].roi = roi;
-                    historyData[cardIndex].timestamp = Date.now();
-                    
-                    // Перемещаем обновленную карточку наверх
+                    historyData[cardIndex].ask = ask; historyData[cardIndex].bid = bid;
+                    historyData[cardIndex].profit = profit; historyData[cardIndex].roi = roi;
                     const updatedCard = historyData.splice(cardIndex, 1)[0];
                     historyData.unshift(updatedCard);
                 }
@@ -396,22 +303,18 @@
             document.getElementById('ask').value = '';
             document.getElementById('bid').value = '';
             resetResults();
-            renderHistory(); // Снимет выделение с активной карточки
+            renderHistory();
         }
 
         function loadCardToFields(id) {
             const card = historyData.find(c => c.id === id);
             if (!card) return;
-            
             activeCardId = id;
             document.getElementById('ask').value = card.ask;
             document.getElementById('bid').value = card.bid;
-            
-            // Вызываем calculate без создания новой записи, так как activeCardId задан
             calculate(); 
         }
 
-        // --- УПРАВЛЕНИЕ ИСТОРИЕЙ И РЕНДЕР ---
         function saveAndRender() {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(historyData));
             updateStorageSize();
@@ -420,17 +323,14 @@
 
         function updateStorageSize() {
             const sizeStr = localStorage.getItem(STORAGE_KEY) || '[]';
-            const bytes = new Blob([sizeStr]).size;
-            const kb = (bytes / 1024).toFixed(2);
+            const kb = (new Blob([sizeStr]).size / 1024).toFixed(2);
             document.getElementById('history-size').innerText = `(${kb} KB)`;
         }
 
         function clearHistory() {
             if(confirm('Удалить всю историю, кроме избранного?')) {
                 historyData = historyData.filter(item => item.isFavorite);
-                if (!historyData.find(c => c.id === activeCardId)) {
-                    activeCardId = null; // Если активная карта удалена
-                }
+                if (!historyData.find(c => c.id === activeCardId)) activeCardId = null;
                 saveAndRender();
             }
         }
@@ -438,50 +338,179 @@
         function renderHistory() {
             const listEl = document.getElementById('history-list');
             listEl.innerHTML = '';
-
             historyData.forEach(item => {
                 const isPos = item.profit > 0;
                 const profitClass = isPos ? 'profit-pos' : (item.profit < 0 ? 'profit-neg' : 'neutral');
                 const sign = isPos ? '+' : '';
-                
-                // Звездочка (SVG) если в избранном
                 const starSvg = item.isFavorite ? `<svg class="star-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>` : '';
                 const displayName = item.name || 'Без названия';
 
-                const cardHtml = `
+                listEl.insertAdjacentHTML('beforeend', `
                     <div class="history-card ${item.id === activeCardId ? 'active-card' : ''}" 
-                         style="border-left-color: ${item.color}" 
-                         onclick="loadCardToFields('${item.id}')">
+                         style="border-left-color: ${item.color}" onclick="loadCardToFields('${item.id}')">
                         <div class="card-data">
                             <div class="card-name">${starSvg} ${displayName}</div>
                             <div class="card-numbers">Аск: ${item.ask} | Бид: ${item.bid}</div>
                         </div>
-                        <div class="card-profit ${profitClass}">
-                            ${sign}${item.profit.toFixed(2)} G
-                        </div>
+                        <div class="card-profit ${profitClass}">${sign}${item.profit.toFixed(2)} G</div>
                         <div class="card-actions">
                             <button class="icon-btn" onclick="openModal(event, '${item.id}')">
                                 <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
                             </button>
                         </div>
                     </div>
-                `;
-                listEl.insertAdjacentHTML('beforeend', cardHtml);
+                `);
             });
             updateStorageSize();
         }
 
-        // --- МОДАЛЬНОЕ ОКНО ---
+        // --- ЛОГИКА КАСТОМНОГО COLOR PICKER ---
+        function hexToHsv(hex) {
+            let r = parseInt(hex.slice(1, 3), 16) / 255 || 0;
+            let g = parseInt(hex.slice(3, 5), 16) / 255 || 0;
+            let b = parseInt(hex.slice(5, 7), 16) / 255 || 0;
+            let max = Math.max(r, g, b), min = Math.min(r, g, b);
+            let h = 0, s = 0, v = max, d = max - min;
+            s = max === 0 ? 0 : d / max;
+            if (max !== min) {
+                switch (max) {
+                    case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                    case g: h = (b - r) / d + 2; break;
+                    case b: h = (r - g) / d + 4; break;
+                }
+                h /= 6;
+            }
+            return [h * 360, s, v];
+        }
+
+        function hsvToRgb(h, s, v) {
+            let r, g, b, i = Math.floor(h / 60), f = h / 60 - i, p = v * (1 - s), q = v * (1 - f * s), t = v * (1 - (1 - f) * s);
+            switch (i % 6) {
+                case 0: r = v, g = t, b = p; break; case 1: r = q, g = v, b = p; break;
+                case 2: r = p, g = v, b = t; break; case 3: r = p, g = q, b = v; break;
+                case 4: r = t, g = p, b = v; break; case 5: r = v, g = p, b = q; break;
+            }
+            return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+        }
+
+        function rgbToHex(r, g, b) {
+            return "#" + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1).toUpperCase();
+        }
+
+        function drawSVCanvas() {
+            const canvas = document.getElementById('sv-canvas');
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+
+            ctx.fillStyle = `hsl(${currentHue}, 100%, 50%)`;
+            ctx.fillRect(0, 0, w, h);
+
+            let gradWhite = ctx.createLinearGradient(0, 0, w, 0);
+            gradWhite.addColorStop(0, 'rgba(255,255,255,1)');
+            gradWhite.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.fillStyle = gradWhite; ctx.fillRect(0, 0, w, h);
+
+            let gradBlack = ctx.createLinearGradient(0, 0, 0, h);
+            gradBlack.addColorStop(0, 'rgba(0,0,0,0)');
+            gradBlack.addColorStop(1, 'rgba(0,0,0,1)');
+            ctx.fillStyle = gradBlack; ctx.fillRect(0, 0, w, h);
+
+            let cx = currentSat * w, cy = (1 - currentVal) * h;
+            ctx.beginPath(); ctx.arc(cx, cy, 6, 0, 2 * Math.PI);
+            ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+            ctx.beginPath(); ctx.arc(cx, cy, 5, 0, 2 * Math.PI);
+            ctx.strokeStyle = '#000'; ctx.lineWidth = 1; ctx.stroke();
+        }
+
+        function drawHueCanvas() {
+            const canvas = document.getElementById('hue-canvas');
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+
+            let grad = ctx.createLinearGradient(0, 0, w, 0);
+            grad.addColorStop(0, 'red'); grad.addColorStop(1/6, 'yellow');
+            grad.addColorStop(2/6, 'green'); grad.addColorStop(3/6, 'cyan');
+            grad.addColorStop(4/6, 'blue'); grad.addColorStop(5/6, 'magenta');
+            grad.addColorStop(1, 'red');
+            ctx.fillStyle = grad; ctx.fillRect(0, 0, w, h);
+
+            let cx = (currentHue / 360) * w;
+            ctx.beginPath(); ctx.rect(cx - 3, 0, 6, h);
+            ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+            ctx.strokeStyle = '#000'; ctx.lineWidth = 1; ctx.strokeRect(cx - 3, 0, 6, h);
+        }
+
+        function updateColorPickerUI() {
+            drawSVCanvas(); drawHueCanvas();
+            let [r, g, b] = hsvToRgb(currentHue, currentSat, currentVal);
+            modalColorHex = rgbToHex(r, g, b);
+            document.getElementById('color-preview').style.backgroundColor = modalColorHex;
+            document.getElementById('color-hex-val').innerText = modalColorHex;
+        }
+
+        function getPos(e, canvas) {
+            const rect = canvas.getBoundingClientRect();
+            let cx = e.touches ? e.touches[0].clientX : e.clientX;
+            let cy = e.touches ? e.touches[0].clientY : e.clientY;
+            return {
+                x: Math.max(0, Math.min(cx - rect.left, rect.width)),
+                y: Math.max(0, Math.min(cy - rect.top, rect.height)),
+                w: rect.width, h: rect.height
+            };
+        }
+
+        function initColorPickerEvents() {
+            const sv = document.getElementById('sv-canvas');
+            const hue = document.getElementById('hue-canvas');
+
+            const handleSV = (e) => {
+                let p = getPos(e, sv);
+                currentSat = p.x / p.w; currentVal = 1 - (p.y / p.h);
+                updateColorPickerUI();
+            };
+            const handleHue = (e) => {
+                let p = getPos(e, hue);
+                currentHue = (p.x / p.w) * 360;
+                updateColorPickerUI();
+            };
+
+            const startSV = (e) => { isDraggingSV = true; handleSV(e); };
+            const moveSV = (e) => { if(isDraggingSV) { if(e.cancelable) e.preventDefault(); handleSV(e); } };
+            const endSV = () => { isDraggingSV = false; };
+
+            sv.addEventListener('mousedown', startSV);
+            window.addEventListener('mousemove', moveSV, {passive: false});
+            window.addEventListener('mouseup', endSV);
+            sv.addEventListener('touchstart', startSV, {passive: false});
+            window.addEventListener('touchmove', moveSV, {passive: false});
+            window.addEventListener('touchend', endSV);
+
+            const startHue = (e) => { isDraggingHue = true; handleHue(e); };
+            const moveHue = (e) => { if(isDraggingHue) { if(e.cancelable) e.preventDefault(); handleHue(e); } };
+            const endHue = () => { isDraggingHue = false; };
+
+            hue.addEventListener('mousedown', startHue);
+            window.addEventListener('mousemove', moveHue, {passive: false});
+            window.addEventListener('mouseup', endHue);
+            hue.addEventListener('touchstart', startHue, {passive: false});
+            window.addEventListener('touchmove', moveHue, {passive: false});
+            window.addEventListener('touchend', endHue);
+        }
+
+        // --- УПРАВЛЕНИЕ МОДАЛКОЙ ---
         function openModal(event, id) {
-            event.stopPropagation(); // Чтобы не срабатывал клик по самой карточке
+            event.stopPropagation();
             editingCardId = id;
             const card = historyData.find(c => c.id === id);
             
             document.getElementById('edit-name').value = card.name;
-            document.getElementById('edit-color').value = card.color;
             document.getElementById('edit-fav').checked = card.isFavorite;
-            
             document.getElementById('edit-modal').classList.add('open');
+            
+            // Инициализируем пикер цветом из карточки только после открытия модалки (чтобы холст имел размеры)
+            let [h, s, v] = hexToHsv(card.color || '#333333');
+            currentHue = h; currentSat = s; currentVal = v;
+            updateColorPickerUI();
         }
 
         function closeModal() {
@@ -492,15 +521,12 @@
         function saveModal() {
             if (!editingCardId) return;
             const cardIndex = historyData.findIndex(c => c.id === editingCardId);
-            
             if (cardIndex !== -1) {
                 historyData[cardIndex].name = document.getElementById('edit-name').value;
-                historyData[cardIndex].color = document.getElementById('edit-color').value;
+                historyData[cardIndex].color = modalColorHex; // Берем цвет из кастомного пикера
                 historyData[cardIndex].isFavorite = document.getElementById('edit-fav').checked;
             }
-            
-            closeModal();
-            saveAndRender();
+            closeModal(); saveAndRender();
         }
     </script>
 </body>
