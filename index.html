@@ -98,11 +98,14 @@
         }
         .modal-content h3 { margin-top: 0; color: #82b1ff; font-size: 18px; margin-bottom: 15px;}
         
+        .standalone-fav-wrapper {
+            display: flex; align-items: center; gap: 8px; color: #fff; font-size: 15px; margin-bottom: 15px; padding: 5px 0;
+        }
+        input[type="checkbox"] { width: 18px; height: 18px; accent-color: #82b1ff; }
+
         /* --- КАСТОМНЫЙ COLOR PICKER --- */
         .picker-container { background: #121212; padding: 15px; border-radius: 8px; border: 1px solid #333; margin-bottom: 15px; }
         .picker-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 13px; color: #aaa; }
-        .fav-wrapper { display: flex; align-items: center; gap: 8px; color: #fff; font-size: 14px;}
-        input[type="checkbox"] { width: 18px; height: 18px; accent-color: #82b1ff; }
         
         #sv-canvas { width: 100%; height: 140px; border-radius: 4px; touch-action: none; display: block; }
         #hue-canvas { width: 100%; height: 24px; border-radius: 4px; touch-action: none; margin-top: 12px; display: block; }
@@ -111,8 +114,9 @@
         #color-preview { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #555; }
         #color-hex-val { font-family: monospace; color: #aaa; font-size: 14px; }
 
-        .modal-buttons { display: flex; gap: 10px; margin-top: 10px; }
-        .modal-buttons button { flex: 1; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; }
+        .modal-buttons { display: flex; gap: 8px; margin-top: 10px; }
+        .modal-buttons button { flex: 1; padding: 10px 0; border-radius: 8px; font-weight: bold; font-size: 13px; cursor: pointer; border: none; }
+        .btn-delete { background: #4a1919; color: #ff5252; }
         .btn-cancel { background: #333; color: #fff; }
         .btn-save { background: #82b1ff; color: #000; }
     </style>
@@ -187,12 +191,13 @@
                 </div>
             </div>
 
+            <div class="standalone-fav-wrapper">
+                <input type="checkbox" id="edit-fav"> Добавить в избранное
+            </div>
+
             <div class="picker-container">
                 <div class="picker-header">
                     <span>Цвет метки</span>
-                    <div class="fav-wrapper">
-                        <input type="checkbox" id="edit-fav"> Избранное
-                    </div>
                 </div>
                 <canvas id="sv-canvas" width="260" height="140"></canvas>
                 <canvas id="hue-canvas" width="260" height="24"></canvas>
@@ -204,6 +209,7 @@
             </div>
 
             <div class="modal-buttons">
+                <button class="btn-delete" onclick="deleteModal()">Удалить</button>
                 <button class="btn-cancel" onclick="closeModal()">Отмена</button>
                 <button class="btn-save" onclick="saveModal()">Сохранить</button>
             </div>
@@ -221,18 +227,14 @@
         let isDraggingSV = false, isDraggingHue = false;
 
         window.onload = () => {
-            // Миграция старых записей на новую формулу (от затрат и с округлением)
             let needsSave = false;
             historyData.forEach(card => {
                 const buyPrice = card.bid + 0.01;
                 const sellPrice = card.ask - 0.01;
-                
-                // Жесткое округление для исторических данных
                 const receivePrice = Math.round((sellPrice * 0.80) * 100) / 100;
                 const currentProfit = Math.round((receivePrice - buyPrice) * 100) / 100;
                 const currentRoi = buyPrice > 0 ? (currentProfit / buyPrice) * 100 : 0;
                 
-                // Проверяем, нужно ли обновить карточку (погрешность 0.001 из-за JS)
                 if (Math.abs(card.roi - currentRoi) > 0.001 || Math.abs(card.profit - currentProfit) > 0.001) {
                     card.profit = currentProfit;
                     card.roi = currentRoi;
@@ -278,11 +280,8 @@
             const buyPrice = bid + 0.01;
             const sellPrice = ask - 0.01;
             
-            // Новая логика расчета с точным математическим округлением
             const receivePrice = Math.round((sellPrice * 0.80) * 100) / 100;
             const profit = Math.round((receivePrice - buyPrice) * 100) / 100;
-            
-            // Расчет окупаемости строго от затрат (buyPrice)
             const roi = buyPrice > 0 ? (profit / buyPrice) * 100 : 0;
 
             updateResultsUI(buyPrice, sellPrice, receivePrice, profit, roi);
@@ -321,6 +320,8 @@
             document.getElementById('bid').value = '';
             resetResults();
             renderHistory();
+            // П. 5: Сразу устанавливаем фокус на поле "АСК"
+            document.getElementById('ask').focus();
         }
 
         function loadCardToFields(id) {
@@ -334,7 +335,6 @@
             const sellPrice = card.ask - 0.01;
             const receivePrice = Math.round((sellPrice * 0.80) * 100) / 100;
             
-            // Используем уже посчитанные и сохраненные значения profit и roi из карточки
             updateResultsUI(buyPrice, sellPrice, receivePrice, card.profit, card.roi);
             renderHistory();
         }
@@ -527,6 +527,7 @@
             window.addEventListener('mouseup', endHue);
             hue.addEventListener('touchstart', startHue, {passive: false});
             window.addEventListener('touchmove', moveHue, {passive: false});
+            window.addEventListener('touchmove', moveHue, {passive: false});
             window.addEventListener('touchend', endHue);
         }
 
@@ -547,6 +548,22 @@
         function closeModal() {
             document.getElementById('edit-modal').classList.remove('open');
             editingCardId = null;
+        }
+
+        // П. 2: Функция удаления одиночной записи
+        function deleteModal() {
+            if (!editingCardId) return;
+            if (confirm('Удалить эту запись?')) {
+                historyData = historyData.filter(c => c.id !== editingCardId);
+                
+                // Если мы удалили карточку, которая сейчас загружена в поля ввода, сбрасываем их
+                if (activeCardId === editingCardId) {
+                    startNewCalc();
+                } else {
+                    saveAndRender();
+                }
+                closeModal();
+            }
         }
 
         function saveModal() {
