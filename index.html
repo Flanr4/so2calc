@@ -74,24 +74,23 @@
 
         .history-header {
             display: flex; justify-content: space-between; align-items: center;
-            border-top: 1px solid #333; /* Сплошная линия по запросу */
+            border-top: 1px solid #333; 
             padding-top: 15px; margin-bottom: 10px; flex-shrink: 0;
         }
         .history-title { font-size: 14px; color: #aaa; }
         .history-size { font-size: 11px; color: #666; margin-left: 5px;}
-        .clear-history-btn { background: none; border: none; color: #f44336; font-size: 13px; cursor: pointer; padding: 4px; } /* Убрано эмодзи */
+        .clear-history-btn { background: none; border: none; color: #f44336; font-size: 13px; cursor: pointer; padding: 4px; } 
 
         .history-list { flex-grow: 1; }
         
         .history-card {
             background-color: #121212; border-radius: 8px; padding: 12px;
-            margin-bottom: 10px; border: 1px solid transparent; /* Убран цветной левый бордер */
+            margin-bottom: 10px; border: 1px solid transparent; 
             display: flex; justify-content: space-between; align-items: center;
         }
-        .history-card.active-card { border: 1px solid #82b1ff; } /* Оставлена только общая голубая рамка */
+        .history-card.active-card { border: 1px solid #82b1ff; } 
         .card-data { flex-grow: 1; cursor: pointer; }
         
-        /* Стили для новой метки цвета */
         .color-badge {
             width: 22px; height: 6px; border-radius: 3px; margin-bottom: 6px; display: block;
         }
@@ -202,7 +201,12 @@
         <div class="modal-content">
             <h3>Настройки записи</h3>
             <div class="input-group" style="margin-bottom: 10px;">
-                <input type="text" id="edit-name" placeholder="Название предмета">
+                <div class="input-wrapper">
+                    <input type="text" id="edit-name" placeholder="Название предмета" onkeydown="handleEnter(event, 'blur')">
+                    <button class="done-btn" onclick="document.getElementById('edit-name').blur()" tabindex="-1">
+                        <svg viewBox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>
+                    </button>
+                </div>
             </div>
 
             <div class="picker-container">
@@ -332,9 +336,17 @@
             document.getElementById('history-size').innerText = `(${kb} KB)`;
         }
 
+        // Обновленная логика очистки
         function clearHistory() {
-            if(confirm('Удалить всю историю, кроме избранного?')) {
-                historyData = historyData.filter(item => item.isFavorite);
+            if(confirm('Удалить пустые расчёты (без названия, цвета и не в избранном)?')) {
+                historyData = historyData.filter(item => {
+                    const hasName = item.name && item.name.trim() !== '';
+                    const hasColor = item.color && item.color !== '#333333';
+                    const isFav = item.isFavorite;
+                    
+                    // Оставляем элемент, если выполняется хотя бы одно из условий
+                    return hasName || hasColor || isFav;
+                });
                 if (!historyData.find(c => c.id === activeCardId)) activeCardId = null;
                 saveAndRender();
             }
@@ -350,7 +362,6 @@
                 const starSvg = item.isFavorite ? `<svg class="star-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>` : '';
                 const displayName = item.name || 'Без названия';
                 
-                // Рендерим метку цвета, только если цвет выбран (отличается от дефолтного #333333)
                 const badgeHtml = (item.color && item.color !== '#333333') 
                     ? `<div class="color-badge" style="background-color: ${item.color};"></div>` 
                     : '';
