@@ -3,40 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Standoff 2 Market Calculator</title>
-    <link rel="manifest" href='data:application/manifest+json,{"name":"SO2 Calc","short_name":"SO2 Calc","start_url":".","display":"standalone","background_color":"#000000","theme_color":"#82b1ff"}'>
+    <link rel="manifest" href='data:application/manifest+json,{"name":"SO2 Calc","short_name":"SO2 Calc","start_url":".","display":"standalone","background_color":"#000000","theme_color":"#000000"}'>
     <style>
-        /* Фикс прокрутки для плавающих окон */
         html, body {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            background-color: #000000;
-            overflow: hidden;
+            height: 100%; margin: 0; padding: 0; background-color: #000000; overflow: hidden;
         }
         body {
-            color: #e0e0e0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            display: flex;
-            justify-content: center;
+            color: #e0e0e0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex; justify-content: center;
         }
         .container {
-            width: 100%;
-            max-width: 380px;
-            height: 100%;
-            overflow-y: auto;
-            padding: 15px 15px 30px 15px;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
+            width: 100%; max-width: 380px; height: 100%; overflow-y: auto;
+            padding: 15px 15px 30px 15px; box-sizing: border-box; display: flex; flex-direction: column;
         }
         .container::-webkit-scrollbar { width: 4px; }
         .container::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
 
-        h2 {
-            color: #82b1ff; text-align: center; margin-top: 0; margin-bottom: 20px;
-            font-size: 20px; text-transform: uppercase; letter-spacing: 1px; flex-shrink: 0;
-        }
+        h2 { color: #82b1ff; text-align: center; margin-top: 0; margin-bottom: 20px; font-size: 20px; text-transform: uppercase; letter-spacing: 1px; flex-shrink: 0; }
         .input-group { margin-bottom: 15px; flex-shrink: 0; }
         label { display: block; margin-bottom: 6px; font-size: 13px; color: #aaa; }
         .input-wrapper { position: relative; display: flex; align-items: center; }
@@ -55,9 +41,7 @@
         .done-btn:active { opacity: 1; }
         .done-btn svg { width: 24px; height: 24px; fill: #82b1ff; }
         
-        .results {
-            margin-top: 10px; border-top: 1px solid #333; padding-top: 15px; flex-shrink: 0;
-        }
+        .results { margin-top: 10px; border-top: 1px solid #333; padding-top: 15px; flex-shrink: 0; }
         .result-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; color: #bbb; }
         .result-row span:last-child { color: #fff; font-variant-numeric: tabular-nums; }
         .highlight { font-size: 18px; margin-top: 12px; }
@@ -74,8 +58,7 @@
 
         .history-header {
             display: flex; justify-content: space-between; align-items: center;
-            border-top: 1px solid #333; 
-            padding-top: 15px; margin-bottom: 10px; flex-shrink: 0;
+            border-top: 1px solid #333; padding-top: 15px; margin-bottom: 10px; flex-shrink: 0;
         }
         .history-title { font-size: 14px; color: #aaa; }
         .history-size { font-size: 11px; color: #666; margin-left: 5px;}
@@ -91,9 +74,7 @@
         .history-card.active-card { border: 1px solid #82b1ff; } 
         .card-data { flex-grow: 1; cursor: pointer; }
         
-        .color-badge {
-            width: 22px; height: 6px; border-radius: 3px; margin-bottom: 6px; display: block;
-        }
+        .color-badge { width: 22px; height: 6px; border-radius: 3px; margin-bottom: 6px; display: block; }
 
         .card-name { font-size: 14px; font-weight: bold; color: #fff; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
         .card-numbers { font-size: 13px; color: #aaa; }
@@ -112,15 +93,12 @@
         .modal-overlay.open { display: flex; }
         .modal-content {
             background: #1e1e1e; padding: 20px; border-radius: 12px;
-            width: 90%; max-width: 320px; border: 1px solid #333;
-            max-height: 95vh; overflow-y: auto;
+            width: 90%; max-width: 320px; border: 1px solid #333; max-height: 95vh; overflow-y: auto;
         }
         .modal-content h3 { margin-top: 0; color: #82b1ff; font-size: 18px; margin-bottom: 15px;}
         
         /* --- КАСТОМНЫЙ COLOR PICKER --- */
-        .picker-container {
-            background: #121212; padding: 15px; border-radius: 8px; border: 1px solid #333; margin-bottom: 15px;
-        }
+        .picker-container { background: #121212; padding: 15px; border-radius: 8px; border: 1px solid #333; margin-bottom: 15px; }
         .picker-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 13px; color: #aaa; }
         .fav-wrapper { display: flex; align-items: center; gap: 8px; color: #fff; font-size: 14px;}
         input[type="checkbox"] { width: 18px; height: 18px; accent-color: #82b1ff; }
@@ -136,7 +114,6 @@
         .modal-buttons button { flex: 1; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; }
         .btn-cancel { background: #333; color: #fff; }
         .btn-save { background: #82b1ff; color: #000; }
-
     </style>
 </head>
 <body>
@@ -243,6 +220,26 @@
         let isDraggingSV = false, isDraggingHue = false;
 
         window.onload = () => {
+            // Бонус к п. 8: Миграция старых записей на новую формулу (от чистой выручки)
+            let needsSave = false;
+            historyData.forEach(card => {
+                const buyPrice = card.bid + 0.01;
+                const sellPrice = card.ask - 0.01;
+                const receivePrice = sellPrice * 0.8;
+                const currentProfit = receivePrice - buyPrice;
+                const currentRoi = receivePrice > 0 ? (currentProfit / receivePrice) * 100 : 0;
+                
+                // Если значения отличаются от сохраненных, обновляем
+                if (Math.abs(card.roi - currentRoi) > 0.01 || Math.abs(card.profit - currentProfit) > 0.01) {
+                    card.profit = currentProfit;
+                    card.roi = currentRoi;
+                    needsSave = true;
+                }
+            });
+            if (needsSave) {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(historyData));
+            }
+
             renderHistory();
             initColorPickerEvents();
         };
@@ -255,18 +252,8 @@
             }
         }
 
-        function calculate() {
-            const bid = parseFloat(document.getElementById('bid').value) || 0;
-            const ask = parseFloat(document.getElementById('ask').value) || 0;
-
-            if (bid <= 0 || ask <= 0) { resetResults(); return; }
-
-            const buyPrice = bid + 0.01;
-            const sellPrice = ask - 0.01;
-            const receivePrice = sellPrice * 0.8;
-            const profit = receivePrice - buyPrice;
-            const roi = (profit / buyPrice) * 100;
-
+        // Вынес обновление UI результатов в отдельную функцию, чтобы не дублировать код
+        function updateResultsUI(buyPrice, sellPrice, receivePrice, profit, roi) {
             document.getElementById('buy-price').innerText = buyPrice.toFixed(2);
             document.getElementById('sell-price').innerText = sellPrice.toFixed(2);
             document.getElementById('receive-price').innerText = receivePrice.toFixed(2);
@@ -278,6 +265,21 @@
             roiEl.innerText = sign + roi.toFixed(1) + '%';
             profitEl.className = profit > 0 ? 'profit-pos' : (profit < 0 ? 'profit-neg' : 'neutral');
             roiEl.className = profit > 0 ? 'profit-pos' : (profit < 0 ? 'profit-neg' : 'neutral');
+        }
+
+        function calculate() {
+            const bid = parseFloat(document.getElementById('bid').value) || 0;
+            const ask = parseFloat(document.getElementById('ask').value) || 0;
+
+            if (bid <= 0 || ask <= 0) { resetResults(); return; }
+
+            const buyPrice = bid + 0.01;
+            const sellPrice = ask - 0.01;
+            const receivePrice = sellPrice * 0.8;
+            const profit = receivePrice - buyPrice;
+            const roi = receivePrice > 0 ? (profit / receivePrice) * 100 : 0; // П. 8: Считаем по receivePrice
+
+            updateResultsUI(buyPrice, sellPrice, receivePrice, profit, roi);
 
             if (!activeCardId) {
                 activeCardId = Date.now().toString();
@@ -285,26 +287,28 @@
                     id: activeCardId, ask, bid, profit, roi,
                     name: '', color: '#333333', isFavorite: false, timestamp: Date.now()
                 });
+                saveAndRender();
             } else {
                 const cardIndex = historyData.findIndex(c => c.id === activeCardId);
                 if (cardIndex !== -1) {
-                    historyData[cardIndex].ask = ask; historyData[cardIndex].bid = bid;
-                    historyData[cardIndex].profit = profit; historyData[cardIndex].roi = roi;
+                    const card = historyData[cardIndex];
+                    // П. 4: Если цифры не поменялись (просто загрузили карточку), ничего не делаем с историей
+                    if (card.ask === ask && card.bid === bid) return; 
+                    
+                    // Если цифры изменились, обновляем и переносим вверх
+                    card.ask = ask; card.bid = bid;
+                    card.profit = profit; card.roi = roi;
                     const updatedCard = historyData.splice(cardIndex, 1)[0];
                     historyData.unshift(updatedCard);
+                    saveAndRender();
                 }
             }
-            saveAndRender();
         }
 
         function resetResults() {
-            document.getElementById('buy-price').innerText = '0.00';
-            document.getElementById('sell-price').innerText = '0.00';
-            document.getElementById('receive-price').innerText = '0.00';
+            updateResultsUI(0, 0, 0, 0, 0);
             document.getElementById('profit').innerText = '0.00 G';
             document.getElementById('roi').innerText = '0.0%';
-            document.getElementById('profit').className = 'neutral';
-            document.getElementById('roi').className = 'neutral';
         }
 
         function startNewCalc() {
@@ -315,13 +319,20 @@
             renderHistory();
         }
 
+        // П. 4: Теперь эта функция только загружает данные в UI без вызова calculate() и перемещения карточки
         function loadCardToFields(id) {
             const card = historyData.find(c => c.id === id);
             if (!card) return;
             activeCardId = id;
             document.getElementById('ask').value = card.ask;
             document.getElementById('bid').value = card.bid;
-            calculate(); 
+            
+            const buyPrice = card.bid + 0.01;
+            const sellPrice = card.ask - 0.01;
+            const receivePrice = sellPrice * 0.8;
+            
+            updateResultsUI(buyPrice, sellPrice, receivePrice, card.profit, card.roi);
+            renderHistory(); // Просто чтобы обновилась голубая рамка активного элемента
         }
 
         function saveAndRender() {
@@ -336,15 +347,12 @@
             document.getElementById('history-size').innerText = `(${kb} KB)`;
         }
 
-        // Обновленная логика очистки
         function clearHistory() {
             if(confirm('Удалить пустые расчёты (без названия, цвета и не в избранном)?')) {
                 historyData = historyData.filter(item => {
                     const hasName = item.name && item.name.trim() !== '';
                     const hasColor = item.color && item.color !== '#333333';
                     const isFav = item.isFavorite;
-                    
-                    // Оставляем элемент, если выполняется хотя бы одно из условий
                     return hasName || hasColor || isFav;
                 });
                 if (!historyData.find(c => c.id === activeCardId)) activeCardId = null;
